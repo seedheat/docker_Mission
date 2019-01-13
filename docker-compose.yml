@@ -1,0 +1,46 @@
+version: '3'
+services:
+  jupyter:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: jupyter_test_compose
+    user: root
+    environment:
+      - GRANT_SUDO=yes
+    ports:
+      - "8888:8888"
+    command: start-notebook.sh --NotebookApp.token=''
+    volumes:
+      - ./work:/home/jovyan/work/
+  
+  mariaDB:
+    image: mariadb
+    container_name: cc104.rds.local
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: cc104rds
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data:/var/lib/mysql
+    depends_on:
+      - jupyter
+ 
+  dynamoDB:
+    image: amazon/dynamodb-local
+    container_name: cc104.dynamodb.local
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mariaDB
+
+  sqs:
+    build:
+      context: ./docker-sqs-local
+      dockerfile: Dockerfile
+    container_name: cc104.sqs.local
+    ports:
+      - "9324:9324"
+    depends_on:
+      - dynamoDB
