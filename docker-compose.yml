@@ -43,6 +43,8 @@ services:
     container_name: cc104.sqs.local
     ports:
       - "9324:9324"
+    volumes:
+      - ./config/elasticmq.conf:/etc/elasticmq/elasticmq.conf
     depends_on:
       - dynamoDB
 
@@ -53,3 +55,13 @@ services:
       - "4569:4569" #for HTTP
     depends_on:
       - sqs
+  
+  sns:
+    image: s12v/sns
+    container_name: cc104.sns.local
+    ports:
+      - "9911:9911"
+    depends_on:
+      - sqs
+    volumes:
+      - ./config/db.json:/etc/sns/db.json
